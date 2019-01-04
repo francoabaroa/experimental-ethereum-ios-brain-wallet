@@ -1,138 +1,278 @@
 import ErrorMessages from '../constants/errors';
 import statusMessage from './status';
 import { Firebase, FirebaseRef } from '../lib/firebase';
+global.Buffer = require('buffer').Buffer;
+
+import TouchID from 'react-native-touch-id';
+// import keccak from 'keccak';
+// import secp256k1 from 'secp256k1';
+
+var SHA256 = require("crypto-js/sha256");
+// var ethUtils = require('ethereumjs-util');
+
+const elliptic = require('elliptic');
+const secp256k1 = new (elliptic.ec)('secp256k1');
+const keccak256 = require('js-sha3').keccak256;
+
+import Web3 from '../../services/web3/web3';
+
+// hacky FIX ASAP
+let currHash = null;
+let currBalance = null;
 
 /**
-  * Sign Up to Firebase
+  * Sign Up
   */
 export function signUp(formData) {
   const {
-    email,
     password,
     password2,
-    firstName,
-    lastName,
+    userName,
   } = formData;
+  currHash = null;
+
+  if (password !== password2) return reject({ message: ErrorMessages.passwordsDontMatch });
+  currHash = hashStepOne(password, userName);
+
+  console.log('this is ' + currHash);
 
   return dispatch => new Promise(async (resolve, reject) => {
+    resolve();
     // Validation checks
-    if (!firstName) return reject({ message: ErrorMessages.missingFirstName });
-    if (!lastName) return reject({ message: ErrorMessages.missingLastName });
-    if (!email) return reject({ message: ErrorMessages.missingEmail });
-    if (!password) return reject({ message: ErrorMessages.missingPassword });
-    if (!password2) return reject({ message: ErrorMessages.missingPassword });
-    if (password !== password2) return reject({ message: ErrorMessages.passwordsDontMatch });
+    // if (!password) return reject({ message: ErrorMessages.missingPassword });
+    // if (!password2) return reject({ message: ErrorMessages.missingPassword });
+    // if (password !== password2) return reject({ message: ErrorMessages.passwordsDontMatch });
+  });
+}
 
-    await statusMessage(dispatch, 'loading', true);
+function hashStepOne(password, userName) {
+  currHash = null;
+  const hashedPassword = SHA256(password);
+  const hashedUserName = SHA256(userName);
+  console.log('this is ' + currHash);
+  return SHA256(hashedPassword + hashedUserName);
+}
 
-    // Go to Firebase
-    return Firebase.auth()
-      .createUserWithEmailAndPassword(email, password)
-      .then((res) => {
-        // Send user details to Firebase database
-        if (res && res.uid) {
-          FirebaseRef.child(`users/${res.uid}`).set({
-            firstName,
-            lastName,
-            signedUp: Firebase.database.ServerValue.TIMESTAMP,
-            lastLoggedIn: Firebase.database.ServerValue.TIMESTAMP,
-          }).then(() => statusMessage(dispatch, 'loading', false).then(resolve));
-        }
-      }).catch(reject);
-  }).catch(async (err) => { await statusMessage(dispatch, 'error', err.message); throw err.message; });
+export function signUpAdditional(formData) {
+  let balance = null;
+  const {
+    color,
+    passcode,
+    word,
+  } = formData;
+  const hashedColor = SHA256(color);
+  const hashedPasscode = SHA256(passcode);
+  const hashedWord = SHA256(word);
+  const hashedMaster = SHA256(hashedColor + hashedPasscode + hashedWord);
+  currHash = SHA256(currHash + hashedMaster);
+  const address = createEverything(currHash.toString());
+  const web3 = new Web3(
+    new Web3.providers.HttpProvider('https://rinkeby.infura.io/v3/3c211cd0c1f940df8bc4c61155232b94')
+  );
+  const currentAccount = web3.eth.accounts.privateKeyToAccount(
+    '0x' + currHash.toString()
+  );
+
+  web3.eth.getBalance(address, function (error, result) {
+    if (!error) {
+      console.log('Ether:', web3.utils.fromWei(result, 'ether'));
+      balance = web3.utils.fromWei(result, 'ether');
+      currBalance = balance;
+    }
+    else {
+      console.log('We have a problem: ', error);
+    }
+  });
+
+  console.log('super hash priv key ', currHash.toString());
+  console.log('address', address);
+  console.log('current Account', currentAccount);
+
+  return dispatch => new Promise(async (resolve, reject) => {
+    // Send Login data to Redux
+    const userData = {
+      address: address,
+      currentBalance: balance ? balance : 0,
+      currentAccount: currentAccount,
+      web3: null,
+    };
+    return resolve(dispatch({
+      type: 'USER_DETAILS_UPDATE',
+      data: userData,
+    }));
+  });
+
 }
 
 /**
   * Get this User's Details
   */
 function getUserData(dispatch) {
-  const UID = (
-    FirebaseRef
-    && Firebase
-    && Firebase.auth()
-    && Firebase.auth().currentUser
-    && Firebase.auth().currentUser.uid
-  ) ? Firebase.auth().currentUser.uid : null;
-
-  if (!UID) return false;
-
-  const ref = FirebaseRef.child(`users/${UID}`);
-
-  return ref.on('value', (snapshot) => {
-    const userData = snapshot.val() || [];
-
-    return dispatch({
-      type: 'USER_DETAILS_UPDATE',
-      data: userData,
-    });
+  console.log('get user data');
+  // const userData = {firstName: 'fra', uid:0, email: 'fra@fra.com', emailVerified:true, lastName: 'fra', role: '', signedUp: true};
+  const userData = {};
+  return dispatch({
+    type: 'USER_DETAILS_UPDATE',
+    data: userData,
   });
+
 }
 
-export function getMemberData() {
-  if (Firebase === null) return () => new Promise(resolve => resolve());
-
-  // Ensure token is up to date
-  return dispatch => new Promise((resolve) => {
-    Firebase.auth().onAuthStateChanged((loggedIn) => {
-      if (loggedIn) {
-        return resolve(getUserData(dispatch));
-      }
-
-      return () => new Promise(() => resolve());
-    });
+export function refreshBalance() {
+  console.log('calling refresh balance', currBalance);
+  return dispatch => new Promise(async (resolve, reject) => {
+    const userData = {
+      currentBalance: currBalance ? currBalance : 0,
+    };
+    return resolve(dispatch({
+      type: 'USER_DETAILS_UPDATE',
+      data: userData,
+    }));
   });
 }
 
 /**
-  * Login to Firebase with Email/Password
+  * Create new wallet for user
+  */
+function createEverything(hash) {
+  // TODO: break this up into seperate functions
+  const privKey = new Buffer(hash, 'hex');
+  const pubKey = (new Buffer(secp256k1.keyFromPrivate(privKey).getPublic(false, 'hex'), 'hex')).slice(1);
+  return '0x' + keccak256.update(pubKey).toString().slice(24);
+}
+
+export function sendMoney(formData, props) {
+  const {
+    amount,
+    currency,
+    gas,
+    toAddress
+  } = formData;
+  if (currency === 'ETH') {
+    console.log(formData, 'SEND MONEYFORM DATA', props);
+    sendEth(amount, gas, toAddress, props.member.currentAccount);
+  } else {
+    // no other currencies supported ATM
+    return;
+  }
+  return dispatch => new Promise(async (resolve, reject) => {
+    resolve();
+    // Validation checks
+  });
+
+}
+
+function sendEth(etherAmt, gas, to, fromAccount) {
+  // TODO: only supports 1 address ATM
+  const ether = 'ether';
+  const web3 = new Web3(
+    new Web3.providers.HttpProvider('https://rinkeby.infura.io/v3/3c211cd0c1f940df8bc4c61155232b94')
+  );
+  const wei = web3.utils.toWei(gas, 'gwei');
+  const currentAccount = web3.eth.accounts.privateKeyToAccount(fromAccount.privateKey);
+
+  console.log('wei', wei);
+  currentAccount.signTransaction({
+    to,
+    value: web3.utils.toWei(etherAmt, ether),
+    gas: wei
+  }).then(signed => {
+      const currentTransaction = web3.eth.sendSignedTransaction(
+        signed.rawTransaction
+      );
+      currentTransaction.on('confirmation', (confirmationNumber, receipt) => {
+        console.log('confirmation: ' + confirmationNumber);
+      });
+      currentTransaction.on('transactionHash', hash => {
+        console.log('hash');
+        console.log(hash);
+      });
+      currentTransaction.on('receipt', receipt => {
+        console.log('reciept');
+        console.log(receipt);
+      });
+      currentTransaction.on('error', error => {
+          console.log(error.toString());
+      });
+
+    });
+}
+
+// function touchAndFaceIdAuthentication() {
+//   // TODO: break this up into seperate functions
+//   TouchID.authenticate('to demo this rn component')
+//   .then(success => {
+//     console.log('Authenticated Successfully');
+//   })
+//   .catch(error => {
+//     console.error('Authentication Failed');
+//   });
+// }
+
+export function getMemberData() {
+  console.log('get member data');
+  return () => new Promise(resolve => resolve());
+
+  // Ensure token is up to date
+  return dispatch => new Promise((resolve) => {
+    return resolve(getUserData(dispatch));
+  });
+}
+
+/**
+  * Login
   */
 export function login(formData) {
+  console.log('get login');
   const {
-    email,
+    userName,
     password,
   } = formData;
+  currHash = null;
+  currHash = hashStepOne(password, userName);
+  return dispatch => new Promise(async (resolve, reject) => {
+    resolve();
+    // Validation checks
+  });
+}
+
+export function loginAdditional(formData) {
+  const {
+    color,
+    passcode,
+    word,
+  } = formData;
+  const hashedColor = SHA256(color);
+  const hashedPasscode = SHA256(passcode);
+  const hashedWord = SHA256(word);
+  const hashedMaster = SHA256(hashedColor + hashedPasscode + hashedWord);
+  currHash = SHA256(currHash + hashedMaster);
+  const address = createEverything(currHash.toString());
+  const web3 = new Web3(
+    new Web3.providers.HttpProvider('https://rinkeby.infura.io/v3/3c211cd0c1f940df8bc4c61155232b94')
+  );
+  const currentAccount = web3.eth.accounts.privateKeyToAccount(
+    '0x' + currHash.toString()
+  );
+
+  console.log('super hash priv key ', currHash.toString());
+  console.log('address', address);
+  console.log('current Account', currentAccount);
 
   return dispatch => new Promise(async (resolve, reject) => {
-    await statusMessage(dispatch, 'loading', true);
+    // Send Login data to Redux
+    const userData = {
+      address: address,
+      currentBalance: currBalance ? currBalance : 0,
+      currentAccount: currentAccount,
+      web3: null,
+    };
+    return resolve(dispatch({
+      type: 'USER_DETAILS_UPDATE',
+      data: userData,
+    }));
+  });
 
-    // Validation checks
-    if (!email) return reject({ message: ErrorMessages.missingEmail });
-    if (!password) return reject({ message: ErrorMessages.missingPassword });
-
-    // Go to Firebase
-    return Firebase.auth()
-      .setPersistence(Firebase.auth.Auth.Persistence.LOCAL)
-      .then(() => Firebase.auth()
-        .signInWithEmailAndPassword(email, password)
-        .then(async (res) => {
-          const userDetails = res && res.user ? res.user : null;
-
-          if (userDetails.uid) {
-            // Update last logged in data
-            FirebaseRef.child(`users/${userDetails.uid}`).update({
-              lastLoggedIn: Firebase.database.ServerValue.TIMESTAMP,
-            });
-
-            // Send verification Email when email hasn't been verified
-            if (userDetails.emailVerified === false) {
-              Firebase.auth().currentUser
-                .sendEmailVerification()
-                .catch(() => console.log('Verification email failed to send'));
-            }
-
-            // Get User Data
-            getUserData(dispatch);
-          }
-
-          await statusMessage(dispatch, 'loading', false);
-
-          // Send Login data to Redux
-          return resolve(dispatch({
-            type: 'USER_LOGIN',
-            data: userDetails,
-          }));
-        }).catch(reject));
-  }).catch(async (err) => { await statusMessage(dispatch, 'error', err.message); throw err.message; });
 }
 
 /**
@@ -142,17 +282,9 @@ export function resetPassword(formData) {
   const { email } = formData;
 
   return dispatch => new Promise(async (resolve, reject) => {
+    resolve();
     // Validation checks
-    if (!email) return reject({ message: ErrorMessages.missingEmail });
-
-    await statusMessage(dispatch, 'loading', true);
-
-    // Go to Firebase
-    return Firebase.auth()
-      .sendPasswordResetEmail(email)
-      .then(() => statusMessage(dispatch, 'loading', false).then(resolve(dispatch({ type: 'USER_RESET' }))))
-      .catch(reject);
-  }).catch(async (err) => { await statusMessage(dispatch, 'error', err.message); throw err.message; });
+  });
 }
 
 /**
@@ -170,54 +302,18 @@ export function updateProfile(formData) {
   } = formData;
 
   return dispatch => new Promise(async (resolve, reject) => {
-    // Are they a user?
-    const UID = Firebase.auth().currentUser.uid;
-    if (!UID) return reject({ message: ErrorMessages.missingFirstName });
-
+    resolve();
     // Validation checks
-    if (!firstName) return reject({ message: ErrorMessages.missingFirstName });
-    if (!lastName) return reject({ message: ErrorMessages.missingLastName });
-    if (changeEmail) {
-      if (!email) return reject({ message: ErrorMessages.missingEmail });
-    }
-    if (changePassword) {
-      if (!password) return reject({ message: ErrorMessages.missingPassword });
-      if (!password2) return reject({ message: ErrorMessages.missingPassword });
-      if (password !== password2) return reject({ message: ErrorMessages.passwordsDontMatch });
-    }
-
-    await statusMessage(dispatch, 'loading', true);
-
-    // Go to Firebase
-    return FirebaseRef.child(`users/${UID}`).update({ firstName, lastName })
-      .then(async () => {
-        // Update Email address
-        if (changeEmail) {
-          await Firebase.auth().currentUser.updateEmail(email).catch(reject);
-        }
-
-        // Change the password
-        if (changePassword) {
-          await Firebase.auth().currentUser.updatePassword(password).catch(reject);
-        }
-
-        // Update Redux
-        await getUserData(dispatch);
-        await statusMessage(dispatch, 'success', 'Profile Updated');
-        resolve();
-      }).catch(reject);
-  }).catch(async (err) => { await statusMessage(dispatch, 'error', err.message); throw err.message; });
+  });
 }
 
 /**
   * Logout
   */
 export function logout() {
-  return dispatch => new Promise((resolve, reject) => {
-    Firebase.auth().signOut()
-      .then(() => {
-        dispatch({ type: 'USER_RESET' });
-        setTimeout(resolve, 1000); // Resolve after 1s so that user sees a message
-      }).catch(reject);
-  }).catch(async (err) => { await statusMessage(dispatch, 'error', err.message); throw err.message; });
+  return dispatch => new Promise(async (resolve, reject) => {
+    return resolve(dispatch({
+      type: 'USER_RESET',
+    }));
+  });
 }

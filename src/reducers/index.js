@@ -16,6 +16,5 @@ export default {
   rehydrated,
   status,
   member,
-  recipes,
   locale,
 };

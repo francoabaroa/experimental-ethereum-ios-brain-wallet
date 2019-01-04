@@ -7,19 +7,50 @@ import {
 import { Actions } from 'react-native-router-flux';
 import Header from './Header';
 
-const Profile = ({ member, logout }) => (
-  <Container>
+const Profile = ({ member, logout }) =>  {
+  return (
+    <Container>
     <Content>
       <List>
-        {(member && member.email)
+        {(member.address)
           ? (
             <View>
               <Content padder>
                 <Header
-                  title={`Hi ${member.firstName},`}
-                  content={`You are currently logged in as ${member.email}`}
+                  title={`Bonjour,`}
+                  content={`Your Ethereum wallet address is ${member.address} `}
+                  fontSize={15}
                 />
+                {/*
+                <Header
+                  title={`Bonjour,`}
+                  content={`Your Ethereum wallet address is ${member.address} \n\nYour Ethereum wallet balance is ${member.currentBalance === '0' ? member.currentBalance : 'loading.' }`}
+                  fontSize={15}
+                />
+                */}
               </Content>
+
+              {/*<ListItem onPress={Actions.tabbar} icon>
+                <Left>
+                  <Icon name="md-arrow-round-forward" />
+                </Left>
+                <Body>
+                  <Text>
+                    Refresh Balance
+                  </Text>
+                </Body>
+              </ListItem>*/}
+
+              <ListItem onPress={Actions.sendTxn} icon>
+                <Left>
+                  <Icon name="md-arrow-round-forward" />
+                </Left>
+                <Body>
+                  <Text>
+                    Send Money
+                  </Text>
+                </Body>
+              </ListItem>
 
               <ListItem onPress={Actions.updateProfile} icon>
                 <Left>
@@ -27,10 +58,11 @@ const Profile = ({ member, logout }) => (
                 </Left>
                 <Body>
                   <Text>
-                    Update My Profile
+                    Update Wallet Settings
                   </Text>
                 </Body>
               </ListItem>
+
               <ListItem onPress={logout} icon>
                 <Left>
                   <Icon name="power" />
@@ -47,8 +79,8 @@ const Profile = ({ member, logout }) => (
             <View>
               <Content padder>
                 <Header
-                  title="Hi there,"
-                  content="Please login to gain extra access"
+                  title="Hello,"
+                  content="Please login or sign up to unlock your wallet"
                 />
               </Content>
 
@@ -85,20 +117,13 @@ const Profile = ({ member, logout }) => (
             </View>
           )
         }
-        <ListItem onPress={Actions.locale} icon>
-          <Left>
-            <Icon name="ios-flag" />
-          </Left>
-          <Body>
-            <Text>
-              Change Language
-            </Text>
-          </Body>
-        </ListItem>
       </List>
     </Content>
   </Container>
-);
+  );
+}
+
+
 
 Profile.propTypes = {
   member: PropTypes.shape({}),

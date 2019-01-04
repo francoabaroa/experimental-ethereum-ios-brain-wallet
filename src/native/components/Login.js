@@ -31,6 +31,7 @@ class Login extends React.Component {
     super(props);
     this.state = {
       email: (props.member && props.member.email) ? props.member.email : '',
+      userName: '',
       password: '',
     };
 
@@ -47,13 +48,13 @@ class Login extends React.Component {
   handleSubmit = () => {
     const { onFormSubmit } = this.props;
     onFormSubmit(this.state)
-      .then(() => Actions.tabbar())
+      .then(() => Actions.loginAdditional())
       .catch(e => console.log(`Error: ${e}`));
   }
 
   render() {
     const { loading, error, locale } = this.props;
-    const { email } = this.state;
+    const { email, userName} = this.state;
 
     if (loading) return <Loading />;
 
@@ -63,7 +64,7 @@ class Login extends React.Component {
           <View padder>
             <Header
               title="Welcome back"
-              content="Please use your email and password to login."
+              content="Please use your username and password to login."
             />
 
             {error && <Messages message={error} />}
@@ -72,13 +73,11 @@ class Login extends React.Component {
           <Form>
             <Item stackedLabel>
               <Label>
-                {translate('Email', locale)}
+User Name (Case Sensitive)
               </Label>
               <Input
-                autoCapitalize="none"
-                value={email}
-                keyboardType="email-address"
-                onChangeText={v => this.handleChange('email', v)}
+                value={userName}
+                onChangeText={v => this.handleChange('userName', v)}
               />
             </Item>
             <Item stackedLabel>

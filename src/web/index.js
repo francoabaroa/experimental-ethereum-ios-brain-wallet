@@ -9,6 +9,7 @@ import configureStore from '../store/index';
 import registerServiceWorker from './register-service-worker';
 import Routes from './routes/index';
 
+
 // Components
 import Loading from './components/Loading';
 

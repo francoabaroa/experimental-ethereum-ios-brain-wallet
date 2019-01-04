@@ -4,6 +4,18 @@ export const initialState = Store;
 
 export default function userReducer(state = initialState, action) {
   switch (action.type) {
+    case 'USER_STEP_1': {
+      if (action.data) {
+        return {
+          ...state,
+          loading: false,
+          error: null,
+          username: action.data.username,
+          email: action.data.email,
+        };
+      }
+      return initialState;
+    }
     case 'USER_LOGIN': {
       if (action.data) {
         return {
@@ -27,6 +39,10 @@ export default function userReducer(state = initialState, action) {
           lastName: action.data.lastName,
           signedUp: action.data.signedUp,
           role: action.data.role,
+          address: action.data.address,
+          currentAccount: action.data.currentAccount,
+          currentBalance: action.data.currentBalance,
+          web3: action.data.web3,
         };
       }
       return initialState;

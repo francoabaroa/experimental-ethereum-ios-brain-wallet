@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { Text, H1 } from 'native-base';
 import Spacer from './Spacer';
 
-const Header = ({ title, content }) => (
+const Header = ({ title, content, fontSize}) => (
   <View>
     <Spacer size={25} />
     <H1>
@@ -13,7 +13,7 @@ const Header = ({ title, content }) => (
     {!!content && (
       <View>
         <Spacer size={10} />
-        <Text>
+        <Text style={fontSize ? {fontSize: fontSize} : null}>
           {content}
         </Text>
       </View>

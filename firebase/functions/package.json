@@ -1,6 +1,6 @@
 {
-  "name": "rnsk-firebase-cloud-functions",
-  "description": "React Native Starter Kit Firebase Cloud Functions",
+  "name": "cn-firebase-cloud-functions",
+  "description": "Custody Network Firebase Cloud Functions",
   "dependencies": {
     "firebase-admin": "^4.1.1",
     "firebase-functions": "^0.5.1"

@@ -9,7 +9,7 @@ import Messages from './Messages';
 import Header from './Header';
 import Spacer from './Spacer';
 
-class SignUp extends React.Component {
+class SignUpAdditional extends React.Component {
   static propTypes = {
     error: PropTypes.string,
     loading: PropTypes.bool.isRequired,
@@ -23,12 +23,9 @@ class SignUp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      password2: '',
-      userName: '',
+      color: '',
+      passcode: null,
+      word: '',
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -44,7 +41,7 @@ class SignUp extends React.Component {
   handleSubmit = () => {
     const { onFormSubmit } = this.props;
     onFormSubmit(this.state)
-      .then(() => Actions.signUpAdditional())
+      .then(() => Actions.tabbar())
       .catch(e => console.log(`Error: ${e}`));
   }
 
@@ -57,8 +54,8 @@ class SignUp extends React.Component {
       <Container>
         <Content padder>
           <Header
-            title="Welcome"
-            content="We're happy to help you create a hyperecure wallet. There's only a few questions and you'll be on your way."
+            title="Security Services"
+            content="Here you can select additional authentication services"
           />
 
           {error && <Messages message={error} />}
@@ -67,30 +64,30 @@ class SignUp extends React.Component {
 
             <Item stackedLabel>
               <Label>
-User Name (Case Sensitive)
+Passcode (4-8 Digits)
               </Label>
-              <Input onChangeText={v => this.handleChange('userName', v)} />
+              <Input onChangeText={v => this.handleChange('passcode', v)} />
             </Item>
 
             <Item stackedLabel>
               <Label>
-Password
+Favorite Color (Case Sensitive)
               </Label>
-              <Input secureTextEntry onChangeText={v => this.handleChange('password', v)} />
+              <Input onChangeText={v => this.handleChange('color', v)} />
             </Item>
 
             <Item stackedLabel>
               <Label>
-Confirm Password
+Random Word (Case Sensitive)
               </Label>
-              <Input secureTextEntry onChangeText={v => this.handleChange('password2', v)} />
+              <Input onChangeText={v => this.handleChange('word', v)} />
             </Item>
 
             <Spacer size={20} />
 
             <Button block onPress={this.handleSubmit}>
               <Text>
-Next
+Finish
               </Text>
             </Button>
           </Form>
@@ -100,4 +97,4 @@ Next
   }
 }
 
-export default SignUp;
+export default SignUpAdditional;

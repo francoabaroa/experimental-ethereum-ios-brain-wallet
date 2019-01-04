@@ -70,22 +70,6 @@ const Index = () => (
       )}
     />
     <Route
-      path="/recipes"
-      render={props => (
-        <TemplateSidebar>
-          <RecipesContainer {...props} Layout={RecipesComponent} />
-        </TemplateSidebar>
-      )}
-    />
-    <Route
-      path="/recipe/:id"
-      render={props => (
-        <TemplateSidebar>
-          <RecipesContainer {...props} Layout={RecipeViewComponent} />
-        </TemplateSidebar>
-      )}
-    />
-    <Route
       render={props => (
         <TemplateSidebar>
           <Error {...props} title="404" content="Sorry, the route you requested does not exist" />

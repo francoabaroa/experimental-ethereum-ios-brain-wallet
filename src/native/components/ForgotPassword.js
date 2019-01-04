@@ -59,32 +59,11 @@ class ForgotPassword extends React.Component {
         <Content padder>
           <Header
             title="Reset your Password"
-            content="No stress, no stress. We'll get you back into your account."
+            content="Sorry, you f*cked up. There are no password resets in crypto."
           />
 
           {error && <Messages message={error} />}
 
-          <Form>
-            <Item stackedLabel>
-              <Label>
-                Email
-              </Label>
-              <Input
-                autoCapitalize="none"
-                value={email}
-                keyboardType="email-address"
-                onChangeText={v => this.handleChange('email', v)}
-              />
-            </Item>
-
-            <Spacer size={20} />
-
-            <Button block onPress={this.handleSubmit}>
-              <Text>
-                Reset Password
-              </Text>
-            </Button>
-          </Form>
         </Content>
       </Container>
     );

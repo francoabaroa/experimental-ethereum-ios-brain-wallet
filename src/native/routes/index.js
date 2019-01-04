@@ -12,14 +12,23 @@ import RecipeViewComponent from '../components/Recipe';
 import SignUpContainer from '../../containers/SignUp';
 import SignUpComponent from '../components/SignUp';
 
+import SignUpAdditionalComponent from '../components/SignUpAdditional';
+import SignUpAdditionalContainer from '../../containers/SignUpAdditional';
+
+import LoginAdditionalComponent from '../components/LoginAdditional';
+import LoginAdditionalContainer from '../../containers/LoginAdditional';
+
 import LoginContainer from '../../containers/Login';
 import LoginComponent from '../components/Login';
 
 import ForgotPasswordContainer from '../../containers/ForgotPassword';
 import ForgotPasswordComponent from '../components/ForgotPassword';
 
-import LocaleContainer from '../../containers/Locale';
-import LocaleComponent from '../components/Locale';
+import SendMoneyContainer from '../../containers/SendMoney';
+import SendMoneyComponent from '../components/SendMoney';
+
+import ConfirmContainer from '../../containers/Confirm';
+import ConfirmComponent from '../components/Confirm';
 
 import UpdateProfileContainer from '../../containers/UpdateProfile';
 import UpdateProfileComponent from '../components/UpdateProfile';
@@ -39,31 +48,30 @@ const Index = (
         showLabel={false}
         {...DefaultProps.tabProps}
       >
-        <Stack
-          key="home"
-          title={AppConfig.appName.toUpperCase()}
-          icon={() => <Icon name="planet" {...DefaultProps.icons} />}
-          {...DefaultProps.navbarProps}
-        >
-          <Scene key="home" component={AboutComponent} />
-        </Stack>
-
-        <Stack
-          key="recipes"
-          title="RECIPES"
-          icon={() => <Icon name="book" {...DefaultProps.icons} />}
-          {...DefaultProps.navbarProps}
-        >
-          <Scene key="recipes" component={RecipesContainer} Layout={RecipesComponent} />
-        </Stack>
 
         <Stack
           key="profile"
-          title="PROFILE"
+          title="WALLET"
           icon={() => <Icon name="contact" {...DefaultProps.icons} />}
           {...DefaultProps.navbarProps}
         >
           <Scene key="profileHome" component={MemberContainer} Layout={ProfileComponent} />
+          <Scene
+            back
+            key="signUpAdditional"
+            title="SIGN UP"
+            {...DefaultProps.navbarProps}
+            component={SignUpAdditionalContainer}
+            Layout={SignUpAdditionalComponent}
+          />
+          <Scene
+            back
+            key="loginAdditional"
+            title="LOG IN"
+            {...DefaultProps.navbarProps}
+            component={LoginAdditionalContainer}
+            Layout={LoginAdditionalComponent}
+          />
           <Scene
             back
             key="signUp"
@@ -90,14 +98,6 @@ const Index = (
           />
           <Scene
             back
-            key="locale"
-            title="CHANGE LANGUAGE"
-            {...DefaultProps.navbarProps}
-            component={LocaleContainer}
-            Layout={LocaleComponent}
-          />
-          <Scene
-            back
             key="updateProfile"
             title="UPDATE PROFILE"
             {...DefaultProps.navbarProps}
@@ -105,10 +105,31 @@ const Index = (
             Layout={UpdateProfileComponent}
           />
         </Stack>
+
+        <Stack
+          key="home"
+          title={AppConfig.appName.toUpperCase()}
+          icon={() => <Icon name="planet" {...DefaultProps.icons} />}
+          {...DefaultProps.navbarProps}
+        >
+          <Scene key="home" component={AboutComponent} />
+        </Stack>
+
+        {/*
+        <Stack
+          key="recipes"
+          title="RECIPES"
+          icon={() => <Icon name="book" {...DefaultProps.icons} />}
+          {...DefaultProps.navbarProps}
+        >
+          <Scene key="recipes" component={RecipesContainer} Layout={RecipesComponent} />
+        </Stack>
+        */}
+
       </Tabs>
     </Scene>
 
-    <Scene
+    {/* <Scene
       back
       clone
       key="recipe"
@@ -116,7 +137,27 @@ const Index = (
       {...DefaultProps.navbarProps}
       component={RecipesContainer}
       Layout={RecipeViewComponent}
+    /> */}
+    <Scene
+      back
+      clone
+      key="sendTxn"
+      title="SEND MONEY"
+      {...DefaultProps.navbarProps}
+      component={SendMoneyContainer}
+      Layout={SendMoneyComponent}
     />
+
+    <Scene
+      back
+      clone
+      key="confirm"
+      title="Sent"
+      {...DefaultProps.navbarProps}
+      component={ConfirmContainer}
+      Layout={ConfirmComponent}
+    />
+
   </Stack>
 );
 
