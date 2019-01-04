@@ -1,3 +1,3 @@
-# Custody Network
+# An experimental Ethereum iOS brain wallet
 
-#### The next big thing
+#### ** insecure, and just to be used for experimental purposes **
