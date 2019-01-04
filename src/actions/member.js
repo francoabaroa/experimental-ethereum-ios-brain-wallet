@@ -34,7 +34,6 @@ export function signUp(formData) {
   if (password !== password2) return reject({ message: ErrorMessages.passwordsDontMatch });
   currHash = hashStepOne(password, userName);
 
-  console.log('this is ' + currHash);
 
   return dispatch => new Promise(async (resolve, reject) => {
     resolve();
@@ -49,7 +48,6 @@ function hashStepOne(password, userName) {
   currHash = null;
   const hashedPassword = SHA256(password);
   const hashedUserName = SHA256(userName);
-  console.log('this is ' + currHash);
   return SHA256(hashedPassword + hashedUserName);
 }
 
@@ -75,7 +73,6 @@ export function signUpAdditional(formData) {
 
   web3.eth.getBalance(address, function (error, result) {
     if (!error) {
-      console.log('Ether:', web3.utils.fromWei(result, 'ether'));
       balance = web3.utils.fromWei(result, 'ether');
       currBalance = balance;
     }
@@ -83,10 +80,6 @@ export function signUpAdditional(formData) {
       console.log('We have a problem: ', error);
     }
   });
-
-  console.log('super hash priv key ', currHash.toString());
-  console.log('address', address);
-  console.log('current Account', currentAccount);
 
   return dispatch => new Promise(async (resolve, reject) => {
     // Send Login data to Redux
@@ -119,7 +112,6 @@ function getUserData(dispatch) {
 }
 
 export function refreshBalance() {
-  console.log('calling refresh balance', currBalance);
   return dispatch => new Promise(async (resolve, reject) => {
     const userData = {
       currentBalance: currBalance ? currBalance : 0,
@@ -149,7 +141,6 @@ export function sendMoney(formData, props) {
     toAddress
   } = formData;
   if (currency === 'ETH') {
-    console.log(formData, 'SEND MONEYFORM DATA', props);
     sendEth(amount, gas, toAddress, props.member.currentAccount);
   } else {
     // no other currencies supported ATM
@@ -170,8 +161,6 @@ function sendEth(etherAmt, gas, to, fromAccount) {
   );
   const wei = web3.utils.toWei(gas, 'gwei');
   const currentAccount = web3.eth.accounts.privateKeyToAccount(fromAccount.privateKey);
-
-  console.log('wei', wei);
   currentAccount.signTransaction({
     to,
     value: web3.utils.toWei(etherAmt, ether),
@@ -210,7 +199,6 @@ function sendEth(etherAmt, gas, to, fromAccount) {
 // }
 
 export function getMemberData() {
-  console.log('get member data');
   return () => new Promise(resolve => resolve());
 
   // Ensure token is up to date
@@ -223,7 +211,6 @@ export function getMemberData() {
   * Login
   */
 export function login(formData) {
-  console.log('get login');
   const {
     userName,
     password,
@@ -254,10 +241,6 @@ export function loginAdditional(formData) {
   const currentAccount = web3.eth.accounts.privateKeyToAccount(
     '0x' + currHash.toString()
   );
-
-  console.log('super hash priv key ', currHash.toString());
-  console.log('address', address);
-  console.log('current Account', currentAccount);
 
   return dispatch => new Promise(async (resolve, reject) => {
     // Send Login data to Redux
