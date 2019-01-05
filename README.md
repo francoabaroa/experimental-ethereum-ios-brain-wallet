@@ -2,22 +2,22 @@
 
 #### ** insecure, and just to be used for experimental purposes **
 
-<p align="center">
+<p>
   <img src="/gif/createWallet.gif?raw=true"/>
 </p>
-<p align="center"> Create a brain wallet </p>
+<p> Create a brain wallet </p>
 
-<p align="center">
+<p>
   <img src="/gif/unlockExistingWallet.gif?raw=true"/>
 </p>
-<p align="center"> Unlock an existing brain wallet </p>
+<p"> Unlock an existing brain wallet </p>
 
-<p align="left">
+<p>
   <img src="/gif/sendMoney.gif?raw=true"/>
 </p>
-<p align="left"> Send crypto to another address  </p>
+<p> Send crypto to another address  </p>
 
-<p align="right">
+<p>
   <img src="/gif/checkTxn.gif?raw=true"/>
 </p>
-<p align="right"> Verify txn sent successfully </p>
+<p> Verify txn sent successfully </p>
