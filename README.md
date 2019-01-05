@@ -2,6 +2,13 @@
 
 #### ** insecure, and just to be used for experimental purposes **
 
+<p float="left">
+  <img src="/gif/createWallet.gif?raw=true" width="100" />
+  <p> Create a brain wallet </p>
+  <img src="/gif/createWallet.gif?raw=true" width="100" />
+  <img src="/gif/createWallet.gif?raw=true"" width="100" />
+</p>
+
 <p>
   <img src="/gif/createWallet.gif?raw=true"/>
 </p>
