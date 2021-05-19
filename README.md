@@ -1,4 +1,4 @@
-# An experimental Ethereum iOS brain wallet
+# An experimental Ethereum iOS brain wallet I built with Joshua
 
 #### ** insecure, and just to be used for experimental purposes **
 
